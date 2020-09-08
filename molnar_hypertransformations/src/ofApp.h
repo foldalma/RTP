@@ -21,6 +21,8 @@ class ofApp : public ofBaseApp{
 		void windowResized(int w, int h);
 		void dragEvent(ofDragInfo dragInfo);
 		void gotMessage(ofMessage msg);
+    
+    void drawSide(float beginCorner[], float endCorner[], float offsetMultiplier);
 		
     float error;
     float padding;
@@ -33,5 +35,6 @@ class ofApp : public ofBaseApp{
     
     ofxToggle bFill;
     ofxIntSlider nSquares;
+    ofxIntSlider randomSeed;
     
 };

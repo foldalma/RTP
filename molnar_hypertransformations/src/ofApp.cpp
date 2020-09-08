@@ -8,6 +8,8 @@ void ofApp::setup(){
     bHideGui = false;
     gui.setup();
     gui.add(bFill.setup("fill", true));
+    gui.add(nSquares.setup("squares", 20, 1, 50));
+    gui.add(randomSeed.setup("random seed", 2, 0, 2000));
     
     padding = ofGetWindowWidth()*(1.0/nSquares);
     error = padding*0.9;
@@ -20,8 +22,8 @@ void ofApp::update(){
 
 //--------------------------------------------------------------
 void ofApp::draw(){
-    ofBackground(255, 255, 255);
-    ofSetColor(0);
+    ofBackground(243, 243, 243);
+    ofSetColor(5, 5, 6);
     ofSetRectMode(OF_RECTMODE_CENTER);
 //    ofEnableBlendMode(OF_BLENDMODE_SUBTRACT);
     
@@ -33,92 +35,72 @@ void ofApp::draw(){
         ofNoFill();
     }
     
-    
-    ofSeedRandom(mouseX);
-    for (int k=0; k < nSquares; k++){
+    ofSeedRandom(randomSeed);
+    for (int k=nSquares; k > 0; k--){
         
         if (bFill) {
-            if (k%4) {
-                ofSetColor(0);
+            if (k%2) {
+                ofSetColor(243, 243, 243);
             }
             else
             {
-                ofSetColor(0);
+                ofSetColor(5, 5, 6);
             }
         }
-    
+        
         float sideSize = ofMap(k,0, nSquares, padding, ofGetWindowWidth()-padding);
         
         float xPlus = ofGetWindowWidth()*0.5 + sideSize*0.5;
         float xMinus = ofGetWindowWidth()*0.5 - sideSize*0.5;
         float yPlus = ofGetWindowHeight()*0.5 + sideSize*0.5;
         float yMinus = ofGetWindowHeight()*0.5 - sideSize*0.5;
-
-        if (!k%2) {
-            ofBeginShape();
-            
-            ofVertex(xPlus,yPlus);
-            if (ofRandom(0,1) < 0.95){
-                ofCurveVertex(xPlus-sideSize*ofRandom(0.2, 0.8),yPlus+ofMap(ofNoise(k*0.5, k*0.5), 0, 1, -error, error));
-            }
-            
-            ofVertex(xMinus,yPlus);
-            ofLog() << "error: " << error;
-            if (ofRandom(0,1) < 0.95){
-                ofCurveVertex(xMinus+ofMap(ofNoise(k*0.1, k*0.1), 0, 1, -error, error),yPlus-sideSize*ofRandom(0.2, 0.8));
-            }
-            
-            ofVertex(xMinus,yMinus);
-            if (ofRandom(0,1) < 0.95){
-                ofCurveVertex(xMinus+sideSize*ofRandom(0.2, 0.8),yMinus-ofMap(ofNoise(k*0.5, k*0.5), 0, 1, -error, error));
-            }
-            
-            ofVertex(xPlus,yMinus);
-            if (ofRandom(0,1) < 0.95){
-                ofCurveVertex(xPlus+ofMap(ofNoise(k*0.5, k*0.5), 0, 1, -error, error),yMinus+sideSize*ofRandom(0.2, 0.8));
-            }
-            
-            ofVertex(xPlus,yPlus);
-            if (ofRandom(0,1) < 0.95){
-                ofCurveVertex(xPlus-sideSize*ofRandom(0.2, 0.8),yPlus+ofMap(ofNoise(k*0.5, k*0.5), 0, 1, -error, error));
-            }
-        }
         
+        float uR[] = {xPlus, yPlus};
+        float uL[] = {xMinus, yPlus};
+        float lL[] = {xMinus, yMinus};
+        float lR[] = {xPlus, yMinus};
 
-        if (k%2) {
-            ofVertex(xPlus,yMinus);
-            if (ofRandom(0,1) < 0.95){
-                ofCurveVertex(xPlus+ofMap(ofNoise(k*0.1, k*0.1), 0, 1, -error, error),yMinus+sideSize*ofRandom(0.2, 0.8));
-            }
-            ofVertex(xMinus,yMinus);
-            if (ofRandom(0,1) < 0.95){
-                ofCurveVertex(xMinus+sideSize*ofRandom(0.2, 0.8),yMinus-ofMap(ofNoise(k*0.5, k*0.5), 0, 1, -error, error));
-            }
-            ofVertex(xMinus,yPlus);
-            ofLog() << "error: " << error;
-            if (ofRandom(0,1) < 0.95){
-                ofCurveVertex(xMinus+ofMap(ofNoise(k*0.5, k*0.5), 0, 1, -error, error),yPlus-sideSize*ofRandom(0.2, 0.8));
-            }
-            ofVertex(xPlus,yPlus);
-            if (ofRandom(0,1) < 0.95){
-                ofCurveVertex(xPlus-sideSize*ofRandom(0.2, 0.8),yPlus+ofMap(ofNoise(k*0.5, k*0.5), 0, 1, -error, error));
-            }
-            
-            ofVertex(xPlus,yMinus);
-            if (ofRandom(0,1) < 0.95){
-                ofCurveVertex(xPlus+ofMap(ofNoise(k*0.5, k*0.5), 0, 1, -error, error),yMinus+sideSize*ofRandom(0.2, 0.8));
-            }
-            
-            ofEndShape();
-        }
+        ofBeginShape();
         
+        float offsetMultiplier = ofMap(k, 0, nSquares, 50, 5);
+        this->drawSide(uL, lL, offsetMultiplier);
+        this->drawSide(lL, lR, offsetMultiplier);
+        this->drawSide(lR, uR, offsetMultiplier);
+        this->drawSide(uR, uL, offsetMultiplier);
+
+        ofEndShape(true);
         
         if(!bHideGui){
             gui.draw();
         }
-//
     }
 
+}
+
+void ofApp::drawSide(float beginCorner[], float endCorner[], float offsetMultiplier) {
+    ofVertex(beginCorner[0],beginCorner[1]);
+    
+    ofVec2f beginPt(beginCorner[0], beginCorner[1]);
+    ofVec2f endPt(endCorner[0], endCorner[1]);
+    ofVec2f sideVector = endPt - beginPt;
+    
+    // create random insertion points for control points
+    int nVertices = ofRandom(0, 10);
+    vector<float> offsets;
+    for (int i = 0; i < nVertices; i++) {
+        offsets.push_back(ofRandom(0, 1));
+    }
+    
+    sort(offsets.begin(), offsets.end());
+    ofLog() << ofToString(sideVector);
+    
+    for (int i = 0; i < offsets.size(); i++) {
+        ofVec2f curPt = beginPt+sideVector*offsets[i];
+        curPt.x += ofMap(ofNoise(i*0.5), 0, 1, 0, offsetMultiplier);
+        curPt.y += ofMap(ofNoise(i*0.5), 0, 1, 0, offsetMultiplier);
+        ofVertex(curPt);
+    }
+    
 }
 
 //--------------------------------------------------------------
