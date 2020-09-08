@@ -10,6 +10,7 @@ void ofApp::setup(){
     gui.add(bFill.setup("fill", true));
     gui.add(nSquares.setup("squares", 20, 1, 50));
     gui.add(randomSeed.setup("random seed", 2, 0, 2000));
+    gui.add(noise2.setup("noise", 0.2, 0, 1));
     
     padding = ofGetWindowWidth()*(1.0/nSquares);
     error = padding*0.9;
@@ -62,7 +63,7 @@ void ofApp::draw(){
 
         ofBeginShape();
         
-        float offsetMultiplier = ofMap(k, 0, nSquares, 50, 5);
+        float offsetMultiplier = ofMap(k, 0, nSquares, 40, 5);
         this->drawSide(uL, lL, offsetMultiplier);
         this->drawSide(lL, lR, offsetMultiplier);
         this->drawSide(lR, uR, offsetMultiplier);
@@ -88,16 +89,15 @@ void ofApp::drawSide(float beginCorner[], float endCorner[], float offsetMultipl
     int nVertices = ofRandom(0, 10);
     vector<float> offsets;
     for (int i = 0; i < nVertices; i++) {
-        offsets.push_back(ofRandom(0, 1));
+        offsets.push_back(ofRandom(0.1, 0.9));
     }
     
     sort(offsets.begin(), offsets.end());
-    ofLog() << ofToString(sideVector);
     
     for (int i = 0; i < offsets.size(); i++) {
         ofVec2f curPt = beginPt+sideVector*offsets[i];
-        curPt.x += ofMap(ofNoise(i*0.5), 0, 1, 0, offsetMultiplier);
-        curPt.y += ofMap(ofNoise(i*0.5), 0, 1, 0, offsetMultiplier);
+        curPt.x += ofMap(ofNoise(i*0.005,i*0.005, noise2), 0, 1, -offsetMultiplier, offsetMultiplier);
+        curPt.y += ofMap(ofNoise(i*0.005,i*0.005, noise2), 0, 1, -offsetMultiplier, offsetMultiplier);
         ofVertex(curPt);
     }
     

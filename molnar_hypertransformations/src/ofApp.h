@@ -36,5 +36,6 @@ class ofApp : public ofBaseApp{
     ofxToggle bFill;
     ofxIntSlider nSquares;
     ofxIntSlider randomSeed;
+    ofxFloatSlider noise2;
     
 };
