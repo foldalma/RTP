@@ -1,0 +1,4 @@
+ofxGui
+ofxPoco
+ofxPostProcessing
+ofxVideoRecorder
